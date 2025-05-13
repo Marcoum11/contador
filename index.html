@@ -1,61 +1,231 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador</title>
-    <style>
-        * {
-         margin: 0px;
-         box-sizing: border-box;
-            
-        }
-        body{
-        
-         background-color: black;
-         color:blueviolet;
-         display: grid;
-         place-items: center;
-         
-        }
-        section{
-           
-         border-radius: 30px;   
-         text-align: center;
-         background-color: rgb(41, 8, 71);
-         padding: 40px;
-         border: 10px solid blueviolet;
-        }
-        p{
-         border: 2px solid blueviolet;
-         font-size: 90px;
-        }
-       
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contador</title>
+<style>
+  * {
+    margin: 0 auto;
+    padding: 0 auto;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #000;
+    color: #ccc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+  }
+
+  .edit-mode {
+    background-color: #1a001f; 
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    color: #a259ff;
+    text-shadow: 0 0 10px #a259ff80;
+  }
+
+  #result {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    padding: 1rem 2rem;
+    border: 2px solid #a259ff;
+    border-radius: 10px;
+    background-color: #111;
+    color: #eee;
+    box-shadow: 0 0 10px #a259ff40;
+  }
+
+  button {
+    font-size: 1.8rem;
+    margin: 0.5rem;
+    padding: 1rem 1rem;
+    border: solid #a259ff 2px;
+    box-shadow:#a259ff40 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #222;
+    color: #ccc;
+    box-shadow: 0 0 6px #444;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  body #buttons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: row;
+  }
+  body #conteudo{
+    display: flex;
+    border-radius: 20px;
+    border-style:ridge;
+    justify-content: center;
+    align-items: center;
+    border-color: #222;
+    text-align: center;
+    flex-direction: column;
+    padding:20px;
+    gap: 20px;
+    box-shadow: 25px 22px 5px #0f0f0f;
+
+    background-color: #161515;
+
+  }
+
+  button:hover {
+    background-color: #333;
+    box-shadow: 0 0 8px #a259ff80;
+  }
+
+  button:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 10px #613797;
+  }
+
+  #zeroBtn {
+    background-color: #3a0a5a;
+    color: #fff;
+    border: solid #a259ff 1px;
+    box-shadow: 0 0 10px rgb(57, 0, 77);
+  }
+
+  #zeroBtn:hover {
+    background-color: #4e1c74;
+    cursor:crosshair;
+  }
+  #plusBtn:hover{
+    cursor:cell
+  }
+  #minusBtn:hover{
+    cursor:n-resize
+  }
+</style>
 </head>
 <body>
- <section>
+
+  <section id="conteudo">
     <h1>Contador</h1>
-    <p id="resultado">0</p>
-    <button onclick="mais()">mais</button>
-    <button onclick="menos()">menos</button>
- </section>
- <script>
-    let number = 0
+    <p id="result"></p>
+    <div id="buttons">
+      <button id="plusBtn" onclick="Plus()">+</button>
+      <button id="zeroBtn">0</button>
+      <button id="minusBtn" onclick="Minus()">-</button>
+    </div>
+  </section>
 
-    function mais(){
-        number++
-        mostrarNaTela()
-    }
-    function menos(){
-        number--
-        mostrarNaTela()
-    }
+<script>
+  let number = 0;
+  const defaultMax = 10;
+  const defaultMin = -10;
+  let max = defaultMax;
+  let min = defaultMin;
+  let step = 1;
+  let editMode = false;
 
-    function mostrarNaTela(){
-        const p = document.getElementById("resultado")
-            p.innerText = number
+  let holdTimeout;
+  let plusHoldInterval;
+  let minusHoldInterval;
+
+  function Plus() {
+    if (editMode) {
+      max += step;
+    } else {
+      if (number + step <= max) {
+        number += step;
+      } else {
+        number = max;
+      }
     }
-    mostrarNaTela()
- </script>
+    showOnScreen();
+  }
+
+  function Minus() {
+    if (editMode) {
+      min -= step;
+    } else {
+      if (number - step >= min) {
+        number -= step;
+      } else {
+        number = min;
+      }
+    }
+    showOnScreen();
+  }
+
+  function showOnScreen() {
+    const p = document.getElementById("result");
+    if (editMode) {
+      p.innerText = `MIN: ${min} | STEP: ${step} | MAX: ${max}`;
+    } else {
+      p.innerText = number;
+    }
+  }
+
+  const zeroBtn = document.getElementById("zeroBtn");
+  const plusBtn = document.getElementById("plusBtn");
+  const minusBtn = document.getElementById("minusBtn");
+
+  // Toggle edit mode on hold
+  zeroBtn.addEventListener("mousedown", () => {
+    holdTimeout = setTimeout(() => {
+      editMode = !editMode;
+      document.body.classList.toggle("edit-mode", editMode);
+      showOnScreen();
+    }, 800);
+  });
+
+  zeroBtn.addEventListener("mouseup", () => {
+    clearTimeout(holdTimeout);
+    if (editMode) {
+      max = defaultMax;
+      min = defaultMin;
+    } else {
+      number = 0;
+    }
+    showOnScreen();
+  });
+
+  zeroBtn.addEventListener("mouseleave", () => {
+    clearTimeout(holdTimeout);
+  });
+
+  // Continuous step increase
+  plusBtn.addEventListener("mousedown", () => {
+    if (editMode) {
+      plusHoldInterval = setInterval(() => {
+        step++;
+        showOnScreen();
+      }, 800);
+    }
+  });
+  plusBtn.addEventListener("mouseup", () => clearInterval(plusHoldInterval));
+  plusBtn.addEventListener("mouseleave", () => clearInterval(plusHoldInterval));
+
+  // Continuous step decrease
+  minusBtn.addEventListener("mousedown", () => {
+    if (editMode) {
+      minusHoldInterval = setInterval(() => {
+        if (step > 1) {
+          step--;
+          showOnScreen();
+        }
+      }, 800);
+    }
+  });
+  minusBtn.addEventListener("mouseup", () => clearInterval(minusHoldInterval));
+  minusBtn.addEventListener("mouseleave", () => clearInterval(minusHoldInterval));
+
+  showOnScreen();
+</script>
 </body>
 </html>
